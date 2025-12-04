@@ -1,5 +1,6 @@
 """
 وحدة التعرف التلقائي على الأعمدة وتخمين نوعها
+نسخة معدّلة: دقة أعلى في اكتشاف التواريخ ونظام درجات للمطابقة
 """
 
 import pandas as pd
@@ -16,11 +17,11 @@ class AutoColumnMapper:
         """تهيئة الأنماط للتعرف على الأعمدة"""
         return {
             'employee_name': {
-                'patterns': ['name', 'employee.*name', 'full.*name', 'الاسم', 'اسم', 'موظف'],
+                'patterns': ['name', 'employee.*name', 'full.*name', 'الاسم', r'\bname\b', r'\bnombre\b'],
                 'keywords': ['name', 'nom', 'nombre', 'اسم']
             },
             'employee_id': {
-                'patterns': ['id', 'employee.*id', 'emp.*id', 'رقم', 'معرف', 'كود'],
+                'patterns': ['\\bid\\b', 'employee.*id', 'emp.*id', 'رقم', 'معرف', 'كود'],
                 'keywords': ['id', 'code', 'رقم', 'معرف']
             },
             'department': {
@@ -58,56 +59,86 @@ class AutoColumnMapper:
         suggestions = {}
         columns = self.df.columns.tolist()
         
-        for column in columns:
-            column_lower = str(column).lower()
+        # نطبّق نظام درجات: كل تطابق يعطي نقاطًا ونأخذ الأعلى
+        for col in columns:
+            col_lower = str(col).lower()
+            scores = {}
             
-            # البحث عن تطابقات في الأنماط
             for field_type, patterns_info in self.column_patterns.items():
-                # البحث في الأنماط
+                score = 0
+                # أنماط regex (أولوية أعلى)
                 for pattern in patterns_info['patterns']:
-                    if re.search(pattern, column_lower, re.IGNORECASE):
-                        suggestions[field_type] = column
-                        break
+                    try:
+                        if re.search(pattern, col_lower, re.IGNORECASE):
+                            score += 3
+                    except re.error:
+                        # تجاهل أي نمط غير صالح
+                        pass
                 
-                # البحث في الكلمات المفتاحية
-                if field_type not in suggestions:
-                    for keyword in patterns_info['keywords']:
-                        if keyword.lower() in column_lower:
-                            suggestions[field_type] = column
-                            break
+                # كلمات مفتاحية
+                for keyword in patterns_info['keywords']:
+                    if keyword.lower() in col_lower:
+                        score += 1
+                
+                # طول التطابق (تفضيل أسماء أقصر وأكثر تحديداً)
+                scores[field_type] = score
             
-            # محاولة التعرف على التواريخ
-            if self._is_date_column(column):
+            # اختر الحقل ذا أعلى درجة بشرط أن الدرجة ليست صفراً
+            best_field = max(scores, key=lambda k: scores[k])
+            if scores[best_field] > 0:
+                # إذا الحقل لم يُقترح بعد، اعطه الاقتراح، أما إذا كان يوجد اقتراح مسبق فنتحقق من التعادل
+                if best_field not in suggestions:
+                    suggestions[best_field] = col
+                else:
+                    # إذا كان هناك اقتراح سابق، نحتفظ بالأقوى عبر مقارنة درجات العمود السابق/الحالي
+                    # (هذه خطوة بسيطة؛ يمكن تحسينها لاحقًا)
+                    pass
+        
+        # الآن نبحث عن أعمدة التواريخ بدقة أكبر
+        for col in columns:
+            if self._is_date_column(col):
+                # نحاول تعيين hire_date أولاً إذا لم يكن موجودًا
                 if 'hire_date' not in suggestions:
-                    suggestions['hire_date'] = column
+                    suggestions['hire_date'] = col
                 elif 'review_date' not in suggestions:
-                    suggestions['review_date'] = column
+                    suggestions['review_date'] = col
         
         return suggestions
     
     def _is_date_column(self, column_name):
-        """فحص إذا كان العمود يحتوي على تواريخ"""
+        """فحص إذا كان العمود يحتوي على تواريخ بدقة أعلى"""
         if column_name not in self.df.columns:
             return False
         
-        column_sample = self.df[column_name].dropna().head(10)
+        column_sample = self.df[column_name].dropna().astype(str).head(10)
         
         if len(column_sample) == 0:
             return False
         
-        # محاولة التحويل إلى تاريخ
-        try:
-            # إذا كان النوع بالفعل datetime
-            if pd.api.types.is_datetime64_any_dtype(self.df[column_name]):
-                return True
-            
-            # اختبار التحويل
-            test_dates = pd.to_datetime(column_sample, errors='coerce')
-            success_rate = test_dates.notna().sum() / len(column_sample)
-            
-            return success_rate > 0.7  # إذا نجح في 70% من الحالات
-        except:
-            return False
+        # إذا كان النوع بالفعل datetime
+        if pd.api.types.is_datetime64_any_dtype(self.df[column_name]):
+            return True
+        
+        # تجربة صيغ محددة (نستخدم raise لاكتشاف الصيغ بدقة)
+        date_formats = ["%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y", "%d/%m/%Y"]
+        success = False
+        for fmt in date_formats:
+            try:
+                pd.to_datetime(column_sample, format=fmt, errors='raise')
+                success = True
+                break
+            except Exception:
+                continue
+        
+        if success:
+            return True
+        
+        # كقاعدة أخيرة: إذا أكثر من %70 من القيم تحتوي على أرقام وشرطات أو شرطات مائلة كدلائل للتاريخ
+        pattern_like_date = column_sample.str.match(r'^[0-9]{1,4}[-/][0-9]{1,2}[-/][0-9]{1,4}$')
+        if pattern_like_date.mean() > 0.7:
+            return True
+        
+        return False
     
     def suggest_column_types(self):
         """اقتراح أنواع البيانات للأعمدة"""
