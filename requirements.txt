@@ -1,6 +1,6 @@
-streamlit==1.35.0
-pandas==2.2.2
-numpy==2.1.0
+streamlit>=1.35.0
+pandas>=2.2.3  # إصدار أحدث قد يحل مشاكل البناء
+numpy>=1.24.3,<2
 plotly==5.22.0
 openpyxl==3.1.2
 python-dateutil==2.8.2
