@@ -1,6 +1,6 @@
 """
 لوحة تحكم الموارد البشرية الذكية - تعمل مع أي ملف Excel
-الإصدار: 2.1.0 - مع تبديل لغة كامل
+إصدار مُحدّث: 2.1.0 - تحسينات الأداء والحماية
 """
 
 import streamlit as st
@@ -28,11 +28,9 @@ class TranslationSystem:
     
     translations = {
         'ar': {
-            # العنوان الرئيسي
+            # (نفس الترجمات كما في النسخة الأصلية)
             'main_title': '📊 لوحة تحكم الموارد البشرية الذكية',
             'main_subtitle': 'تعمل مع <strong>أي ملف Excel</strong> - قم برفع ملفك وسنكتشف البيانات تلقائياً',
-            
-            # الشريط الجانبي
             'sidebar_settings': '⚙️ إعدادات',
             'sidebar_language': 'اللغة:',
             'sidebar_theme': 'المظهر:',
@@ -41,33 +39,23 @@ class TranslationSystem:
             'sidebar_load_success': 'تم تحميل الإعدادات السابقة',
             'sidebar_save_success': 'تم حفظ الإعدادات',
             'sidebar_no_settings': 'لا توجد إعدادات سابقة',
-            
-            # رفع الملف
             'upload_title': '📤 الخطوة 1: رفع ملف Excel',
             'upload_placeholder': 'اسحب وأفلت ملف Excel هنا أو انقر للاختيار',
             'upload_help': 'يدعم الملفات: Excel (.xlsx, .xls), CSV',
             'upload_success': '✅ تم تحميل الملف بنجاح!',
             'upload_error': '❌ خطأ في تحميل الملف:',
             'preview_data': '👀 معاينة البيانات (أول 5 صفوف)',
-            
-            # إحصائيات
             'stats_records': 'عدد السجلات',
             'stats_columns': 'عدد الأعمدة',
             'stats_numeric': 'أعمدة رقمية',
-            
-            # تعيين الأعمدة
             'mapping_title': '🎯 الخطوة 2: تعيين الأعمدة',
             'mapping_auto': '💡 <strong>التعرف التلقائي</strong>: النظام حاول تخمين أنواع الأعمدة. يمكنك تعديلها يدوياً إذا كانت غير صحيحة.',
-            
-            # فئات الأعمدة
             'cat_employee_info': 'معلومات الموظف',
             'cat_financial': 'المالية',
             'cat_performance': 'الأداء',
             'cat_attendance': 'الحضور',
             'cat_training': 'التدريب',
             'cat_management': 'المتابعة',
-            
-            # أسماء الحقول
             'field_employee_name': 'اسم الموظف',
             'field_employee_id': 'رقم الموظف',
             'field_department': 'القسم',
@@ -92,11 +80,7 @@ class TranslationSystem:
             'field_location': 'الموقع',
             'field_employment_type': 'نوع التوظيف',
             'field_status': 'الحالة',
-            
-            # زر التحليل
             'analyze_button': '🚀 انتقل إلى التحليل',
-            
-            # نتائج التحليل
             'analysis_title': '📊 الخطوة 3: تحليل البيانات الذكي',
             'kpis_title': '📈 النتائج الرئيسية',
             'charts_title': '📊 الرسوم البيانية التلقائية',
@@ -106,23 +90,17 @@ class TranslationSystem:
             'outliers_found': 'تم اكتشاف {} قيمة شاذة في الرواتب',
             'no_outliers': '✅ لم يتم اكتشاف قيم شاذة في الرواتب',
             'zero_std': 'الانحراف المعياري للرواتب صفر، لا يمكن اكتشاف قيم شاذة',
-            
-            # تصدير
             'export_data': '📥 تحميل البيانات المعدلة (CSV)',
             'export_report': '📄 تحميل التقرير الكامل',
             'download_csv': '⬇️ انقر للتحميل',
             'download_report': '⬇️ انقر للتحميل',
-            
-            # رسائل أخرى
             'loading': 'جاري التحميل...',
             'not_available': 'غير متوفر',
         },
         'en': {
-            # Main Title
+            # (نفس الترجمات الإنجليزية كما في الأصل)
             'main_title': '📊 Smart HR Analytics Dashboard',
             'main_subtitle': 'Works with <strong>any Excel file</strong> - Upload your file and we will automatically detect data',
-            
-            # Sidebar
             'sidebar_settings': '⚙️ Settings',
             'sidebar_language': 'Language:',
             'sidebar_theme': 'Theme:',
@@ -131,33 +109,23 @@ class TranslationSystem:
             'sidebar_load_success': 'Previous settings loaded',
             'sidebar_save_success': 'Settings saved',
             'sidebar_no_settings': 'No previous settings',
-            
-            # File Upload
             'upload_title': '📤 Step 1: Upload Excel File',
             'upload_placeholder': 'Drag and drop Excel file here or click to browse',
             'upload_help': 'Supports: Excel (.xlsx, .xls), CSV',
             'upload_success': '✅ File uploaded successfully!',
             'upload_error': '❌ Error loading file:',
             'preview_data': '👀 Data Preview (First 5 rows)',
-            
-            # Statistics
             'stats_records': 'Number of Records',
             'stats_columns': 'Number of Columns',
             'stats_numeric': 'Numeric Columns',
-            
-            # Column Mapping
             'mapping_title': '🎯 Step 2: Map Columns',
             'mapping_auto': '💡 <strong>Auto-detection</strong>: System tried to guess column types. You can adjust manually if incorrect.',
-            
-            # Column Categories
             'cat_employee_info': 'Employee Information',
             'cat_financial': 'Financial',
             'cat_performance': 'Performance',
             'cat_attendance': 'Attendance',
             'cat_training': 'Training',
             'cat_management': 'Management',
-            
-            # Field Names
             'field_employee_name': 'Employee Name',
             'field_employee_id': 'Employee ID',
             'field_department': 'Department',
@@ -182,11 +150,7 @@ class TranslationSystem:
             'field_location': 'Location',
             'field_employment_type': 'Employment Type',
             'field_status': 'Status',
-            
-            # Analysis Button
             'analyze_button': '🚀 Proceed to Analysis',
-            
-            # Analysis Results
             'analysis_title': '📊 Step 3: Smart Data Analysis',
             'kpis_title': '📈 Key Results',
             'charts_title': '📊 Automatic Charts',
@@ -196,14 +160,10 @@ class TranslationSystem:
             'outliers_found': 'Found {} outliers in salaries',
             'no_outliers': '✅ No outliers detected in salaries',
             'zero_std': 'Salary standard deviation is zero, cannot detect outliers',
-            
-            # Export
             'export_data': '📥 Download Modified Data (CSV)',
             'export_report': '📄 Download Full Report',
             'download_csv': '⬇️ Click to Download',
             'download_report': '⬇️ Click to Download',
-            
-            # Other Messages
             'loading': 'Loading...',
             'not_available': 'Not Available',
         }
@@ -217,16 +177,17 @@ class TranslationSystem:
     
     @staticmethod
     def translate(key):
-        """ترجمة المفتاح بناءً على اللغة الحالية"""
+        """ترجمة المفتاح بناء على اللغة الحالية"""
         language = st.session_state.get('language', 'ar')
         return TranslationSystem.get_translation(key, language)
 
 # تهيئة نظام الترجمة
 translator = TranslationSystem()
 
-# تحميل CSS مع دعم متعدد اللغات
-def load_css(language='ar'):
-    """تحميل CSS مع دعم اتجاه النص"""
+# تحميل CSS مع دعم متعدد اللغات — نحمّله مرة واحدة فقط لتحسين الأداء
+def load_css_once(language='ar'):
+    if st.session_state.get("css_loaded", False):
+        return
     text_align = 'right' if language == 'ar' else 'left'
     font_family = "'Cairo', 'Segoe UI', Tahoma, sans-serif" if language == 'ar' else "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     
@@ -241,7 +202,6 @@ def load_css(language='ar'):
         text-align: center;
         font-family: {font_family};
     }}
-    
     .kpi-card {{
         background: white;
         border-radius: 12px;
@@ -254,12 +214,10 @@ def load_css(language='ar'):
         font-family: {font_family};
         direction: {'rtl' if language == 'ar' else 'ltr'};
     }}
-    
     .kpi-card:hover {{
         transform: translateY(-5px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     }}
-    
     .upload-box {{
         border: 2px dashed #4c51bf;
         border-radius: 12px;
@@ -270,7 +228,6 @@ def load_css(language='ar'):
         font-family: {font_family};
         direction: {'rtl' if language == 'ar' else 'ltr'};
     }}
-    
     .column-map-item {{
         background: #edf2f7;
         padding: 15px;
@@ -279,7 +236,6 @@ def load_css(language='ar'):
         font-family: {font_family};
         direction: {'rtl' if language == 'ar' else 'ltr'};
     }}
-    
     .warning-box {{
         background: #fff3cd;
         border: 1px solid #ffeaa7;
@@ -289,31 +245,25 @@ def load_css(language='ar'):
         font-family: {font_family};
         direction: {'rtl' if language == 'ar' else 'ltr'};
     }}
-    
-    /* دعم النصوص العربية */
     .arabic-text {{
         font-family: 'Cairo', 'Segoe UI', sans-serif;
         direction: rtl;
         text-align: right;
     }}
-    
     .english-text {{
         font-family: 'Segoe UI', Tahoma, sans-serif;
         direction: ltr;
         text-align: left;
     }}
-    
-    /* تنسيق عام للصفحة */
     .stApp {{
         font-family: {font_family};
         text-align: {text_align};
     }}
     </style>
-    
-    <!-- تحميل خط Cairo للعربية -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     """
     st.markdown(css, unsafe_allow_html=True)
+    st.session_state["css_loaded"] = True
 
 # تهيئة حالة الجلسة
 if 'language' not in st.session_state:
@@ -332,35 +282,33 @@ if 'analysis_results' not in st.session_state:
 # وظائف تبديل اللغة والمظهر
 def toggle_language():
     st.session_state.language = 'en' if st.session_state.language == 'ar' else 'ar'
-    st.rerun()
+    st.experimental_rerun()
 
 def toggle_theme():
     st.session_state.theme = 'dark' if st.session_state.theme == 'light' else 'light'
-    st.rerun()
+    st.experimental_rerun()
 
-# تحميل CSS بناءً على اللغة
-load_css(st.session_state.language)
+# تحميل CSS مرة واحدة
+load_css_once(st.session_state.language)
 
 # ==================== الشريط الجانبي ====================
 with st.sidebar:
     st.markdown(f"### {translator.translate('sidebar_settings')}")
     
     # تبديل اللغة
-    current_lang = 'العربية' if st.session_state.language == 'en' else 'English'
-    lang_button = st.button(f"🌐 {current_lang}", use_container_width=True)
-    if lang_button:
+    current_lang_label = 'العربية' if st.session_state.language == 'ar' else 'English'
+    if st.button(f"🌐 {current_lang_label}", width='stretch'):
         toggle_language()
     
     # تبديل المظهر
     current_theme = '🌙 مظلم' if st.session_state.theme == 'light' else '☀️ فاتح'
-    theme_button = st.button(current_theme, use_container_width=True)
-    if theme_button:
+    if st.button(current_theme, width='stretch'):
         toggle_theme()
     
     st.divider()
     
     # تحميل الإعدادات السابقة
-    if st.button(translator.translate('sidebar_load_settings'), use_container_width=True):
+    if st.button(translator.translate('sidebar_load_settings'), width='stretch'):
         if os.path.exists('config.json'):
             with open('config.json', 'r', encoding='utf-8') as f:
                 config = json.load(f)
@@ -371,7 +319,7 @@ with st.sidebar:
     
     # حفظ الإعدادات
     if st.session_state.column_mapping:
-        if st.button(translator.translate('sidebar_save_settings'), use_container_width=True):
+        if st.button(translator.translate('sidebar_save_settings'), width='stretch'):
             config = {
                 'column_mapping': st.session_state.column_mapping,
                 'saved_at': datetime.now().isoformat(),
@@ -411,7 +359,7 @@ if uploaded_file is not None:
         
         # عرض عينة من البيانات
         with st.expander(translator.translate('preview_data')):
-            st.dataframe(df.head(), use_container_width=True)
+            st.dataframe(df.head(), width='stretch')
         
         # عرض معلومات الأعمدة
         col1, col2, col3 = st.columns(3)
@@ -448,10 +396,12 @@ if st.session_state.file_uploaded and st.session_state.df is not None:
         translator.translate('cat_financial'): ["salary", "allowances", "bonus", "tax"],
         translator.translate('cat_performance'): ["performance_score", "kpi", "rating", "review_date"],
         translator.translate('cat_attendance'): ["attendance_days", "absent_days", "late_days", "overtime_hours"],
-        translator.translate('cat_training'): ["trainings_completed", "training_hours", "certifications"],
+        translator.translate('cat_training'): ["trainings_completed", "training_hours', 'certifications".replace("'", "")],  # safe placeholder if formatting off
         translator.translate('cat_management'): ["manager", "location", "employment_type", "status"]
     }
     
+    # Note: avoid accidental syntax issues if translations contain quotes
+    # We'll build the UI safely:
     for category, fields in categories.items():
         st.markdown(f"### {category}")
         
@@ -483,146 +433,157 @@ if st.session_state.file_uploaded and st.session_state.df is not None:
     st.session_state.column_mapping = column_mapping
     
     # زر للمتابعة للتحليل
-    if st.button(translator.translate('analyze_button'), type="primary", use_container_width=True):
-        st.session_state.analysis_ready = True
-        st.rerun()
+    if st.button(translator.translate('analyze_button'), key="analyze_btn", width='stretch'):
+        if not st.session_state.column_mapping:
+            st.warning("الرجاء تعيين عمود واحد على الأقل قبل المتابعة.")
+        else:
+            st.session_state.analysis_ready = True
+            st.experimental_rerun()
 
 # ==================== التحليل الذكي ====================
 if st.session_state.get('analysis_ready', False):
-    st.markdown(f"## {translator.translate('analysis_title')}")
-    
-    analyzer = FlexibleDataAnalyzer(
-        st.session_state.df, 
-        st.session_state.column_mapping
-    )
-    
-    # التحليل الذكي للبيانات
-    analysis = analyzer.analyze_all()
-    st.session_state.analysis_results = analysis
-    
-    # عرض النتائج الرئيسية
-    st.markdown(f"### {translator.translate('kpis_title')}")
-    
-    # بطاقات KPIs
-    kpis = analysis.get('kpis', {})
-    if kpis:
-        cols = st.columns(4)
-        kpi_keys = list(kpis.keys())[:4]
+    # حماية إضافية: لا ننفّذ التحليل إذا لم تكن هناك خريطة أعمدة
+    if not st.session_state.column_mapping:
+        st.warning("لا توجد إعدادات تعيين أعمدة. عد إلى خطوة التعيين.")
+    elif st.session_state.df is None:
+        st.warning("لا توجد بيانات لعرضها. الرجاء رفع ملف صالح.")
+    else:
+        st.markdown(f"## {translator.translate('analysis_title')}")
         
-        for idx, (col, kpi_key) in enumerate(zip(cols, kpi_keys)):
-            with col:
-                value = kpis[kpi_key]['value']
-                label = kpis[kpi_key]['label']
-                
-                st.markdown(f"""
-                <div class="kpi-card">
-                    <div style="font-size: 2rem; margin-bottom: 10px;">
-                        {kpis[kpi_key].get('icon', '📊')}
-                    </div>
-                    <div style="font-size: 2rem; font-weight: bold; color: #3B82F6;">
-                        {value}
-                    </div>
-                    <div style="color: #6B7280;">
-                        {label}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-    
-    # الرسوم البيانية الذكية
-    st.markdown(f"### {translator.translate('charts_title')}")
-    
-    visualizer = SmartVisualizer(
-        st.session_state.df,
-        st.session_state.column_mapping,
-        analysis
-    )
-    
-    # عرض الرسوم حسب توفر البيانات
-    charts = visualizer.generate_all_charts()
-    
-    for chart_info in charts:
-        if chart_info['available']:
-            st.markdown(f"#### {chart_info['title']}")
-            st.plotly_chart(chart_info['figure'], use_container_width=True)
-    
-    # تحليل إضافي
-    with st.expander(translator.translate('advanced_title')):
-        st.markdown(f"### {translator.translate('advanced_title')}")
+        analyzer = FlexibleDataAnalyzer(
+            st.session_state.df, 
+            st.session_state.column_mapping
+        )
         
-        # تحليل العلاقات
-        numeric_cols = []
-        for col in st.session_state.df.columns:
-            if pd.api.types.is_numeric_dtype(st.session_state.df[col]):
-                numeric_cols.append(col)
+        # التحليل الذكي للبيانات
+        analysis = analyzer.analyze_all()
+        st.session_state.analysis_results = analysis
         
-        if len(numeric_cols) >= 2:
-            st.markdown(f"#### {translator.translate('correlations_title')}")
+        # عرض النتائج الرئيسية
+        st.markdown(f"### {translator.translate('kpis_title')}")
+        
+        # بطاقات KPIs
+        kpis = analysis.get('kpis', {})
+        if kpis:
+            cols = st.columns(4)
+            kpi_keys = list(kpis.keys())[:4]
             
-            # خريطة حرارية للعلاقات
-            numeric_df = st.session_state.df[numeric_cols]
-            corr_matrix = numeric_df.corr()
-            
-            import plotly.express as px
-            fig = px.imshow(
-                corr_matrix,
-                text_auto='.2f',
-                color_continuous_scale='RdBu',
-                aspect="auto",
-                title=translator.translate('correlations_title')
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # اكتشاف القيم الشاذة
-        st.markdown(f"#### {translator.translate('outliers_title')}")
-        if 'salary' in st.session_state.column_mapping:
-            salary_col = st.session_state.column_mapping['salary']
-            if salary_col in st.session_state.df.columns:
-                try:
-                    salary_data = st.session_state.df[salary_col].dropna()
+            for idx, (col, kpi_key) in enumerate(zip(cols, kpi_keys)):
+                with col:
+                    value = kpis[kpi_key]['value']
+                    label = kpis[kpi_key]['label']
                     
-                    if len(salary_data) > 0:
-                        # حساب z-score يدويًا باستخدام numpy
-                        mean_salary = salary_data.mean()
-                        std_salary = salary_data.std()
+                    st.markdown(f"""
+                    <div class="kpi-card">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">
+                            {kpis[kpi_key].get('icon', '📊')}
+                        </div>
+                        <div style="font-size: 2rem; font-weight: bold; color: #3B82F6;">
+                            {value}
+                        </div>
+                        <div style="color: #6B7280;">
+                            {label}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # الرسوم البيانية الذكية
+        st.markdown(f"### {translator.translate('charts_title')}")
+        
+        visualizer = SmartVisualizer(
+            st.session_state.df,
+            st.session_state.column_mapping,
+            analysis
+        )
+        
+        # عرض الرسوم حسب توفر البيانات
+        charts = visualizer.generate_all_charts()
+        
+        for chart_info in charts:
+            if chart_info.get('available', False):
+                st.markdown(f"#### {chart_info.get('title', '')}")
+                st.plotly_chart(chart_info['figure'], width='stretch')
+        
+        # تحليل إضافي
+        with st.expander(translator.translate('advanced_title')):
+            st.markdown(f"### {translator.translate('advanced_title')}")
+            
+            # تحليل العلاقات
+            numeric_cols = []
+            for col in st.session_state.df.columns:
+                if pd.api.types.is_numeric_dtype(st.session_state.df[col]):
+                    numeric_cols.append(col)
+            
+            if len(numeric_cols) >= 2:
+                st.markdown(f"#### {translator.translate('correlations_title')}")
+                
+                # خريطة حرارية للعلاقات
+                numeric_df = st.session_state.df[numeric_cols]
+                corr_matrix = numeric_df.corr()
+                
+                import plotly.express as px
+                fig = px.imshow(
+                    corr_matrix,
+                    text_auto='.2f',
+                    color_continuous_scale='RdBu',
+                    aspect="auto",
+                    title=translator.translate('correlations_title')
+                )
+                st.plotly_chart(fig, width='stretch')
+            
+            # اكتشاف القيم الشاذة
+            st.markdown(f"#### {translator.translate('outliers_title')}")
+            if 'salary' in st.session_state.column_mapping:
+                salary_col = st.session_state.column_mapping['salary']
+                if salary_col in st.session_state.df.columns:
+                    try:
+                        salary_data = st.session_state.df[salary_col].dropna()
                         
-                        if std_salary > 0:  # تجنب القسمة على صفر
-                            z_scores = np.abs((salary_data - mean_salary) / std_salary)
-                            outliers_mask = z_scores > 3
-                            outliers = st.session_state.df.loc[salary_data.index[outliers_mask]]
+                        if len(salary_data) > 0:
+                            # حساب z-score يدويًا باستخدام numpy
+                            mean_salary = salary_data.mean()
+                            std_salary = salary_data.std()
                             
-                            if len(outliers) > 0:
-                                st.warning(translator.translate('outliers_found').format(len(outliers)))
-                                st.dataframe(outliers[[salary_col]], use_container_width=True)
+                            if std_salary > 0:  # تجنب القسمة على صفر
+                                z_scores = np.abs((salary_data - mean_salary) / std_salary)
+                                outliers_mask = z_scores > 3
+                                outliers = st.session_state.df.loc[salary_data.index[outliers_mask]]
+                                
+                                if len(outliers) > 0:
+                                    st.warning(translator.translate('outliers_found').format(len(outliers)))
+                                    st.dataframe(outliers[[salary_col]], width='stretch')
+                                else:
+                                    st.success(translator.translate('no_outliers'))
                             else:
-                                st.success(translator.translate('no_outliers'))
-                        else:
-                            st.info(translator.translate('zero_std'))
-                except Exception as e:
-                    st.error(f"Error in outlier detection: {str(e)}")
-    
-    # تحميل التقارير
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # تصدير البيانات المعدلة
-        if st.button(translator.translate('export_data'), use_container_width=True):
-            modified_df = analyzer.get_modified_dataframe()
-            csv = modified_df.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(
-                label=translator.translate('download_csv'),
-                data=csv,
-                file_name="hr_data_modified.csv",
-                mime="text/csv"
-            )
-    
-    with col2:
-        # تصدير التقرير
-        if st.button(translator.translate('export_report'), use_container_width=True):
-            report = analyzer.generate_report()
-            st.download_button(
-                label=translator.translate('download_report'),
-                data=report,
-                file_name="hr_analysis_report.txt",
-                mime="text/plain"
-            )
+                                st.info(translator.translate('zero_std'))
+                    except Exception as e:
+                        st.error(f"Error in outlier detection: {str(e)}")
+        
+        # تحميل التقارير
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # تصدير البيانات المعدلة
+            if st.button(translator.translate('export_data'), width='stretch'):
+                modified_df = analyzer.get_modified_dataframe()
+                csv = modified_df.to_csv(index=False).encode('utf-8-sig')
+                st.download_button(
+                    label=translator.translate('download_csv'),
+                    data=csv,
+                    file_name="hr_data_modified.csv",
+                    mime="text/csv",
+                    key="dl_csv"
+                )
+        
+        with col2:
+            # تصدير التقرير
+            if st.button(translator.translate('export_report'), width='stretch'):
+                report = analyzer.generate_report()
+                st.download_button(
+                    label=translator.translate('download_report'),
+                    data=report,
+                    file_name="hr_analysis_report.txt",
+                    mime="text/plain",
+                    key="dl_report"
+                )
