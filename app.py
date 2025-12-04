@@ -1,6 +1,6 @@
 """
 لوحة تحكم الموارد البشرية الذكية - تعمل مع أي ملف Excel
-الإصدار: 2.0.0
+الإصدار: 2.0.1 - بدون scipy
 """
 
 import streamlit as st
@@ -64,6 +64,14 @@ def load_css():
         background: #edf2f7;
         padding: 15px;
         border-radius: 10px;
+        margin: 10px 0;
+    }
+    
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
         margin: 10px 0;
     }
     </style>
@@ -278,6 +286,61 @@ if st.session_state.get('analysis_ready', False):
             st.markdown(f"#### {chart_info['title']}")
             st.plotly_chart(chart_info['figure'], use_container_width=True)
     
+    # تحليل إضافي
+    with st.expander("🔍 تحليل متقدم"):
+        st.markdown("### تحليل متقدم")
+        
+        # تحليل العلاقات
+        numeric_cols = []
+        for col in st.session_state.df.columns:
+            if pd.api.types.is_numeric_dtype(st.session_state.df[col]):
+                numeric_cols.append(col)
+        
+        if len(numeric_cols) >= 2:
+            st.markdown("#### العلاقات بين المتغيرات")
+            
+            # خريطة حرارية للعلاقات
+            numeric_df = st.session_state.df[numeric_cols]
+            corr_matrix = numeric_df.corr()
+            
+            import plotly.express as px
+            fig = px.imshow(
+                corr_matrix,
+                text_auto='.2f',
+                color_continuous_scale='RdBu',
+                aspect="auto",
+                title='خريطة حرارية للعلاقات'
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        # اكتشاف القيم الشاذة باستخدام numpy فقط (بدون scipy)
+        st.markdown("#### اكتشاف القيم الشاذة")
+        if 'salary' in st.session_state.column_mapping:
+            salary_col = st.session_state.column_mapping['salary']
+            if salary_col in st.session_state.df.columns:
+                try:
+                    salary_data = st.session_state.df[salary_col].dropna()
+                    
+                    if len(salary_data) > 0:
+                        # حساب z-score يدويًا باستخدام numpy
+                        mean_salary = salary_data.mean()
+                        std_salary = salary_data.std()
+                        
+                        if std_salary > 0:  # تجنب القسمة على صفر
+                            z_scores = np.abs((salary_data - mean_salary) / std_salary)
+                            outliers_mask = z_scores > 3
+                            outliers = st.session_state.df.loc[salary_data.index[outliers_mask]]
+                            
+                            if len(outliers) > 0:
+                                st.warning(f"تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب")
+                                st.dataframe(outliers[[salary_col]], use_container_width=True)
+                            else:
+                                st.success("✅ لم يتم اكتشاف قيم شاذة في الرواتب")
+                        else:
+                            st.info("الانحراف المعياري للرواتب صفر، لا يمكن اكتشاف قيم شاذة")
+                except Exception as e:
+                    st.error(f"خطأ في اكتشاف القيم الشاذة: {str(e)}")
+    
     # تحميل التقارير
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -304,37 +367,3 @@ if st.session_state.get('analysis_ready', False):
                 file_name="hr_analysis_report.txt",
                 mime="text/plain"
             )
-    
-    # تحليل إضافي
-    with st.expander("🔍 تحليل متقدم"):
-        st.markdown("### تحليل متقدم")
-        
-        # تحليل العلاقات
-        if len(numeric_cols) >= 2:
-            st.markdown("#### العلاقات بين المتغيرات")
-            
-            # خريطة حرارية للعلاقات
-            numeric_df = st.session_state.df[numeric_cols]
-            corr_matrix = numeric_df.corr()
-            
-            import plotly.express as px
-            fig = px.imshow(
-                corr_matrix,
-                text_auto='.2f',
-                color_continuous_scale='RdBu',
-                aspect="auto"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # اكتشاف القيم الشاذة
-        st.markdown("#### اكتشاف القيم الشاذة")
-        if 'salary' in st.session_state.column_mapping:
-            salary_col = st.session_state.column_mapping['salary']
-            if salary_col in st.session_state.df.columns:
-                from scipy import stats
-                z_scores = np.abs(stats.zscore(st.session_state.df[salary_col].dropna()))
-                outliers = st.session_state.df[z_scores > 3]
-                
-                if len(outliers) > 0:
-                    st.warning(f"تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب")
-                    st.dataframe(outliers[[salary_col]], use_container_width=True)
