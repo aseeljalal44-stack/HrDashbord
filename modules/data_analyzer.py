@@ -1,5 +1,6 @@
 """
 وحدة التحليل الذكي للبيانات - تعمل مع أي هيكل بيانات
+الإصدار بدون scipy
 """
 
 import pandas as pd
@@ -118,11 +119,12 @@ class FlexibleDataAnalyzer:
                     tenure_days = (current_date - self.df[date_col]).dt.days
                     avg_tenure = tenure_days.mean() / 365.25
                     
-                    kpis['avg_tenure'] = {
-                        'value': f"{avg_tenure:.1f} سنوات",
-                        'label': 'متوسط العمر التنظيمي',
-                        'icon': '⏳'
-                    }
+                    if not np.isnan(avg_tenure):
+                        kpis['avg_tenure'] = {
+                            'value': f"{avg_tenure:.1f} سنوات",
+                            'label': 'متوسط العمر التنظيمي',
+                            'icon': '⏳'
+                        }
                 except:
                     pass
         
@@ -199,7 +201,7 @@ class FlexibleDataAnalyzer:
                 for i in range(len(corr_matrix.columns)):
                     for j in range(i+1, len(corr_matrix.columns)):
                         corr_value = corr_matrix.iloc[i, j]
-                        if abs(corr_value) > 0.5 and not pd.isna(corr_value):
+                        if not pd.isna(corr_value) and abs(corr_value) > 0.5:
                             strong_correlations.append({
                                 'col1': corr_matrix.columns[i],
                                 'col2': corr_matrix.columns[j],
@@ -244,14 +246,18 @@ class FlexibleDataAnalyzer:
                     self.df[perf_col] = pd.to_numeric(self.df[perf_col], errors='coerce')
                     self.df[salary_col] = pd.to_numeric(self.df[salary_col], errors='coerce')
                     
-                    correlation = self.df[[perf_col, salary_col]].corr().iloc[0,1]
-                    
-                    if correlation > 0.3:
-                        insights.append("📈 العلاقة بين الأداء والراتب **إيجابية وقوية**")
-                    elif correlation < -0.3:
-                        insights.append("📉 العلاقة بين الأداء والراتب **سلبية**")
-                    else:
-                        insights.append("⚖️ **لا توجد علاقة واضحة** بين الأداء والراتب")
+                    # حساب الارتباط باستخدام numpy
+                    valid_data = self.df[[perf_col, salary_col]].dropna()
+                    if len(valid_data) > 1:
+                        correlation = np.corrcoef(valid_data[perf_col], valid_data[salary_col])[0, 1]
+                        
+                        if not np.isnan(correlation):
+                            if correlation > 0.3:
+                                insights.append("📈 العلاقة بين الأداء والراتب **إيجابية وقوية**")
+                            elif correlation < -0.3:
+                                insights.append("📉 العلاقة بين الأداء والراتب **سلبية**")
+                            else:
+                                insights.append("⚖️ **لا توجد علاقة واضحة** بين الأداء والراتب")
                 except:
                     pass
         
@@ -284,21 +290,38 @@ class FlexibleDataAnalyzer:
         if duplicates > 0:
             warnings.append(f"⚠️ يوجد {duplicates} سجل مكرر")
         
-        # 3. فحص القيم المتطرفة في الرواتب
+        # 3. فحص القيم المتطرفة في الرواتب (بدون scipy)
         if 'salary' in self.mapping:
             salary_col = self.mapping['salary']
             if salary_col in self.df.columns:
                 try:
                     salary_data = pd.to_numeric(self.df[salary_col], errors='coerce').dropna()
                     if len(salary_data) > 0:
+                        # حساب القيم المتطرفة باستخدام IQR (بدون scipy)
                         q1 = salary_data.quantile(0.25)
                         q3 = salary_data.quantile(0.75)
                         iqr = q3 - q1
-                        outliers = salary_data[(salary_data < (q1 - 1.5 * iqr)) | 
-                                              (salary_data > (q3 + 1.5 * iqr))]
                         
-                        if len(outliers) > 0:
-                            warnings.append(f"⚠️ تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب")
+                        if iqr > 0:  # تجنب iqr = 0
+                            lower_bound = q1 - 1.5 * iqr
+                            upper_bound = q3 + 1.5 * iqr
+                            
+                            outliers = salary_data[(salary_data < lower_bound) | (salary_data > upper_bound)]
+                            
+                            if len(outliers) > 0:
+                                warnings.append(f"⚠️ تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب (استخدام IQR)")
+                except:
+                    pass
+        
+        # 4. فحص التواريخ غير المنطقية
+        if 'hire_date' in self.mapping:
+            date_col = self.mapping['hire_date']
+            if date_col in self.df.columns:
+                try:
+                    dates = pd.to_datetime(self.df[date_col], errors='coerce')
+                    future_dates = dates[dates > pd.Timestamp.now()]
+                    if len(future_dates) > 0:
+                        warnings.append(f"⚠️ يوجد {len(future_dates)} تاريخ تعيين في المستقبل")
                 except:
                     pass
         
