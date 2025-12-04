@@ -50,6 +50,18 @@ class AutoColumnMapper:
             'status': {
                 'patterns': ['status', 'state', 'condition', 'حالة', 'وضع'],
                 'keywords': ['status', 'state', 'حالة']
+            },
+            'gender': {
+                'patterns': ['gender', 'sex', 'جنس', 'الجنس'],
+                'keywords': ['gender', 'sex', 'جنس']
+            },
+            'email': {
+                'patterns': ['email', 'mail', 'بريد', 'إيميل'],
+                'keywords': ['email', 'mail', '@']
+            },
+            'phone': {
+                'patterns': ['phone', 'mobile', 'tel', 'هاتف', 'جوال'],
+                'keywords': ['phone', 'mobile', 'tel', 'هاتف']
             }
         }
     
