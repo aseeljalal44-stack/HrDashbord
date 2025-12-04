@@ -66,6 +66,10 @@ class SmartVisualizer:
         dept_counts = self.df[dept_col].value_counts().reset_index()
         dept_counts.columns = ['department', 'count']
         
+        # إذا كان هناك أكثر من 15 قسم، أخذ أول 15 فقط
+        if len(dept_counts) > 15:
+            dept_counts = dept_counts.head(15)
+        
         # إنشاء الرسم
         fig = px.bar(
             dept_counts,
@@ -79,7 +83,8 @@ class SmartVisualizer:
         fig.update_layout(
             xaxis_title='القسم',
             yaxis_title='عدد الموظفين',
-            coloraxis_showscale=False
+            coloraxis_showscale=False,
+            xaxis_tickangle=45
         )
         
         return {
@@ -112,13 +117,14 @@ class SmartVisualizer:
             
             # إضافة خط للمتوسط
             avg_salary = salary_data.mean()
-            fig.add_vline(
-                x=avg_salary,
-                line_dash="dash",
-                line_color="red",
-                annotation_text=f"المتوسط: ${avg_salary:,.0f}",
-                annotation_position="top right"
-            )
+            if not np.isnan(avg_salary):
+                fig.add_vline(
+                    x=avg_salary,
+                    line_dash="dash",
+                    line_color="red",
+                    annotation_text=f"المتوسط: ${avg_salary:,.0f}",
+                    annotation_position="top right"
+                )
             
             return {
                 'title': 'توزيع الرواتب',
@@ -148,6 +154,11 @@ class SmartVisualizer:
                 perf_data,
                 title='توزيع درجات الأداء',
                 labels={'value': 'درجة الأداء'}
+            )
+            
+            fig.update_layout(
+                xaxis_title='الأداء',
+                yaxis_title='درجة الأداء'
             )
             
             return {
@@ -191,15 +202,16 @@ class SmartVisualizer:
             correlation = df_clean[[perf_col, salary_col]].corr().iloc[0,1]
             
             # إضافة نص معامل الارتباط
-            fig.add_annotation(
-                x=0.05, y=0.95,
-                xref="paper", yref="paper",
-                text=f"معامل الارتباط: {correlation:.2f}",
-                showarrow=False,
-                bgcolor="white",
-                bordercolor="black",
-                borderwidth=1
-            )
+            if not np.isnan(correlation):
+                fig.add_annotation(
+                    x=0.05, y=0.95,
+                    xref="paper", yref="paper",
+                    text=f"معامل الارتباط: {correlation:.2f}",
+                    showarrow=False,
+                    bgcolor="white",
+                    bordercolor="black",
+                    borderwidth=1
+                )
             
             return {
                 'title': 'العلاقة بين الراتب والأداء',
