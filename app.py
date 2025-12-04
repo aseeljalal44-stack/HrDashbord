@@ -1,6 +1,6 @@
 """
 لوحة تحكم الموارد البشرية الذكية - تعمل مع أي ملف Excel
-الإصدار: 2.1.0 - مع تبديل لغة كامل
+الإصدار: 3.0.0 - مع تقارير مباشرة وإصلاح الأخطاء
 """
 
 import streamlit as st
@@ -51,7 +51,7 @@ class TranslationSystem:
             'preview_data': '👀 معاينة البيانات (أول 5 صفوف)',
             
             # إحصائيات
-            'stats_records': 'عدد السجلات',
+            'stats_records': 'عدد السجل',
             'stats_columns': 'عدد الأعمدة',
             'stats_numeric': 'أعمدة رقمية',
             
@@ -107,11 +107,13 @@ class TranslationSystem:
             'no_outliers': '✅ لم يتم اكتشاف قيم شاذة في الرواتب',
             'zero_std': 'الانحراف المعياري للرواتب صفر، لا يمكن اكتشاف قيم شاذة',
             
+            # التقرير
+            'report_title': '📄 التقرير النصي الكامل',
+            'generate_report': '📋 إنشاء التقرير',
+            
             # تصدير
             'export_data': '📥 تحميل البيانات المعدلة (CSV)',
-            'export_report': '📄 تحميل التقرير الكامل',
             'download_csv': '⬇️ انقر للتحميل',
-            'download_report': '⬇️ انقر للتحميل',
             
             # رسائل أخرى
             'loading': 'جاري التحميل...',
@@ -141,8 +143,8 @@ class TranslationSystem:
             'preview_data': '👀 Data Preview (First 5 rows)',
             
             # Statistics
-            'stats_records': 'Number of Records',
-            'stats_columns': 'Number of Columns',
+            'stats_records': 'Records Count',
+            'stats_columns': 'Columns Count',
             'stats_numeric': 'Numeric Columns',
             
             # Column Mapping
@@ -197,11 +199,13 @@ class TranslationSystem:
             'no_outliers': '✅ No outliers detected in salaries',
             'zero_std': 'Salary standard deviation is zero, cannot detect outliers',
             
+            # Report
+            'report_title': '📄 Full Text Report',
+            'generate_report': '📋 Generate Report',
+            
             # Export
             'export_data': '📥 Download Modified Data (CSV)',
-            'export_report': '📄 Download Full Report',
             'download_csv': '⬇️ Click to Download',
-            'download_report': '⬇️ Click to Download',
             
             # Other Messages
             'loading': 'Loading...',
@@ -290,23 +294,30 @@ def load_css(language='ar'):
         direction: {'rtl' if language == 'ar' else 'ltr'};
     }}
     
-    /* دعم النصوص العربية */
-    .arabic-text {{
-        font-family: 'Cairo', 'Segoe UI', sans-serif;
-        direction: rtl;
-        text-align: right;
-    }}
-    
-    .english-text {{
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        direction: ltr;
-        text-align: left;
+    .report-box {{
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 25px;
+        margin: 20px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        direction: {'rtl' if language == 'ar' else 'ltr'};
+        max-height: 600px;
+        overflow-y: auto;
     }}
     
     /* تنسيق عام للصفحة */
     .stApp {{
         font-family: {font_family};
         text-align: {text_align};
+    }}
+    
+    /* تخصيص markdown */
+    .stMarkdown {{
+        font-family: {font_family};
     }}
     </style>
     
@@ -328,6 +339,10 @@ if 'column_mapping' not in st.session_state:
     st.session_state.column_mapping = {}
 if 'analysis_results' not in st.session_state:
     st.session_state.analysis_results = {}
+if 'report_generated' not in st.session_state:
+    st.session_state.report_generated = False
+if 'report_text' not in st.session_state:
+    st.session_state.report_text = ""
 
 # وظائف تبديل اللغة والمظهر
 def toggle_language():
@@ -598,31 +613,44 @@ if st.session_state.get('analysis_ready', False):
                         else:
                             st.info(translator.translate('zero_std'))
                 except Exception as e:
-                    st.error(f"Error in outlier detection: {str(e)}")
+                    st.error(f"خطأ في اكتشاف القيم الشاذة: {str(e)}")
     
-    # تحميل التقارير
-    st.markdown("---")
-    col1, col2 = st.columns(2)
+    # ==================== التقرير النصي المباشر ====================
+    st.markdown(f"## {translator.translate('report_title')}")
     
-    with col1:
-        # تصدير البيانات المعدلة
-        if st.button(translator.translate('export_data'), use_container_width=True):
-            modified_df = analyzer.get_modified_dataframe()
-            csv = modified_df.to_csv(index=False).encode('utf-8-sig')
-            st.download_button(
-                label=translator.translate('download_csv'),
-                data=csv,
-                file_name="hr_data_modified.csv",
-                mime="text/csv"
-            )
+    # زر إنشاء التقرير
+    if st.button(translator.translate('generate_report'), type="secondary", use_container_width=True):
+        with st.spinner("جاري إنشاء التقرير..."):
+            report_text = analyzer.generate_report()
+            st.session_state.report_text = report_text
+            st.session_state.report_generated = True
+            st.rerun()
     
-    with col2:
-        # تصدير التقرير
-        if st.button(translator.translate('export_report'), use_container_width=True):
-            report = analyzer.generate_report()
-            st.download_button(
-                label=translator.translate('download_report'),
-                data=report,
-                file_name="hr_analysis_report.txt",
-                mime="text/plain"
-            )
+    # عرض التقرير إذا تم إنشاؤه
+    if st.session_state.report_generated and st.session_state.report_text:
+        st.markdown('<div class="report-box">', unsafe_allow_html=True)
+        st.text(st.session_state.report_text)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # زر لنسخ التقرير
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # نسخ التقرير إلى الحافظة
+            if st.button("📋 نسخ التقرير إلى الحافظة", use_container_width=True):
+                st.session_state.report_text = analyzer.generate_report()
+                st.code(st.session_state.report_text, language="text")
+                st.success("✓ تم نسخ التقرير إلى الحافظة")
+        
+        with col2:
+            # تصدير البيانات المعدلة فقط
+            if st.button(translator.translate('export_data'), use_container_width=True):
+                modified_df = analyzer.get_modified_dataframe()
+                csv = modified_df.to_csv(index=False, encoding='utf-8-sig')
+                st.download_button(
+                    label=translator.translate('download_csv'),
+                    data=csv,
+                    file_name="hr_data_modified.csv",
+                    mime="text/csv"
+                )
