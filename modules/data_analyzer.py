@@ -1,6 +1,6 @@
 """
 وحدة التحليل الذكي للبيانات - تعمل مع أي هيكل بيانات
-الإصدار بدون scipy
+الإصدار مع إصلاح الأخطاء
 """
 
 import pandas as pd
@@ -61,22 +61,28 @@ class FlexibleDataAnalyzer:
                     if not pd.api.types.is_numeric_dtype(self.df[salary_col]):
                         self.df[salary_col] = pd.to_numeric(self.df[salary_col], errors='coerce')
                     
-                    avg_salary = self.df[salary_col].mean()
-                    median_salary = self.df[salary_col].median()
-                    
-                    kpis['avg_salary'] = {
-                        'value': f"${avg_salary:,.0f}",
+                    salary_data = self.df[salary_col].dropna()
+                    if len(salary_data) > 0:
+                        avg_salary = salary_data.mean()
+                        median_salary = salary_data.median()
+                        
+                        kpis['avg_salary'] = {
+                            'value': f"${avg_salary:,.0f}" if not np.isnan(avg_salary) else "N/A",
+                            'label': 'متوسط الراتب',
+                            'icon': '💰'
+                        }
+                        
+                        kpis['median_salary'] = {
+                            'value': f"${median_salary:,.0f}" if not np.isnan(median_salary) else "N/A",
+                            'label': 'الراتب الوسيط',
+                            'icon': '📊'
+                        }
+                except Exception as e:
+                    kpis['salary_error'] = {
+                        'value': 'خطأ في الحساب',
                         'label': 'متوسط الراتب',
-                        'icon': '💰'
+                        'icon': '⚠️'
                     }
-                    
-                    kpis['median_salary'] = {
-                        'value': f"${median_salary:,.0f}",
-                        'label': 'الراتب الوسيط',
-                        'icon': '📊'
-                    }
-                except:
-                    pass
         
         # التحقق من وجود أقسام
         if 'department' in self.mapping:
@@ -97,12 +103,14 @@ class FlexibleDataAnalyzer:
                     if not pd.api.types.is_numeric_dtype(self.df[perf_col]):
                         self.df[perf_col] = pd.to_numeric(self.df[perf_col], errors='coerce')
                     
-                    avg_perf = self.df[perf_col].mean()
-                    kpis['avg_performance'] = {
-                        'value': f"{avg_perf:.1f}/5",
-                        'label': 'متوسط الأداء',
-                        'icon': '📈'
-                    }
+                    perf_data = self.df[perf_col].dropna()
+                    if len(perf_data) > 0:
+                        avg_perf = perf_data.mean()
+                        kpis['avg_performance'] = {
+                            'value': f"{avg_perf:.1f}/5" if not np.isnan(avg_perf) else "N/A",
+                            'label': 'متوسط الأداء',
+                            'icon': '📈'
+                        }
                 except:
                     pass
         
@@ -161,13 +169,14 @@ class FlexibleDataAnalyzer:
             if salary_col in self.df.columns:
                 try:
                     salary_data = pd.to_numeric(self.df[salary_col], errors='coerce').dropna()
-                    distributions['salary'] = {
-                        'min': salary_data.min(),
-                        'max': salary_data.max(),
-                        'mean': salary_data.mean(),
-                        'median': salary_data.median(),
-                        'std': salary_data.std()
-                    }
+                    if len(salary_data) > 0:
+                        distributions['salary'] = {
+                            'min': float(salary_data.min()),
+                            'max': float(salary_data.max()),
+                            'mean': float(salary_data.mean()),
+                            'median': float(salary_data.median()),
+                            'std': float(salary_data.std())
+                        }
                 except:
                     pass
         
@@ -228,11 +237,12 @@ class FlexibleDataAnalyzer:
                     self.df[salary_col] = pd.to_numeric(self.df[salary_col], errors='coerce')
                     dept_salary = self.df.groupby(dept_col)[salary_col].mean().sort_values()
                     
-                    highest_dept = dept_salary.idxmax()
-                    lowest_dept = dept_salary.idxmin()
-                    
-                    insights.append(f"أعلى راتب في قسم: **{highest_dept}**")
-                    insights.append(f"أقل راتب في قسم: **{lowest_dept}**")
+                    if len(dept_salary) > 0:
+                        highest_dept = dept_salary.idxmax()
+                        lowest_dept = dept_salary.idxmin()
+                        
+                        insights.append(f"أعلى راتب في قسم: **{highest_dept}**")
+                        insights.append(f"أقل راتب في قسم: **{lowest_dept}**")
                 except:
                     pass
         
@@ -252,8 +262,10 @@ class FlexibleDataAnalyzer:
                         correlation = np.corrcoef(valid_data[perf_col], valid_data[salary_col])[0, 1]
                         
                         if not np.isnan(correlation):
-                            if correlation > 0.3:
+                            if correlation > 0.5:
                                 insights.append("📈 العلاقة بين الأداء والراتب **إيجابية وقوية**")
+                            elif correlation > 0.3:
+                                insights.append("📈 العلاقة بين الأداء والراتب **إيجابية**")
                             elif correlation < -0.3:
                                 insights.append("📉 العلاقة بين الأداء والراتب **سلبية**")
                             else:
@@ -275,7 +287,7 @@ class FlexibleDataAnalyzer:
         return insights
     
     def _check_data_quality(self):
-        """فحص جودة البيانات"""
+        """فحص جودة البيانات - إصدار مصحح"""
         warnings = []
         
         # 1. فحص القيم المفقودة
@@ -283,35 +295,43 @@ class FlexibleDataAnalyzer:
         high_missing = missing_percentage[missing_percentage > 20].index.tolist()
         
         if high_missing:
-            warnings.append(f"⚠️ أعمدة بها قيم مفقودة >20%: {', '.join(high_missing)}")
+            warnings.append(f"⚠️ أعمدة بها قيم مفقودة >20%: {', '.join(high_missing[:5])}")
         
         # 2. فحص التكرارات
         duplicates = self.df.duplicated().sum()
         if duplicates > 0:
             warnings.append(f"⚠️ يوجد {duplicates} سجل مكرر")
         
-        # 3. فحص القيم المتطرفة في الرواتب (بدون scipy)
+        # 3. فحص القيم المتطرفة في الرواتب - إصلاح المقارنة
         if 'salary' in self.mapping:
             salary_col = self.mapping['salary']
             if salary_col in self.df.columns:
                 try:
-                    salary_data = pd.to_numeric(self.df[salary_col], errors='coerce').dropna()
+                    # التحويل إلى عدد وفلترة القيم الناقصة
+                    salary_data = pd.to_numeric(self.df[salary_col], errors='coerce')
+                    salary_data = salary_data.dropna()
+                    
                     if len(salary_data) > 0:
-                        # حساب القيم المتطرفة باستخدام IQR (بدون scipy)
-                        q1 = salary_data.quantile(0.25)
-                        q3 = salary_data.quantile(0.75)
-                        iqr = q3 - q1
-                        
-                        if iqr > 0:  # تجنب iqr = 0
-                            lower_bound = q1 - 1.5 * iqr
-                            upper_bound = q3 + 1.5 * iqr
+                        # التحقق من أن البيانات رقمية
+                        if pd.api.types.is_numeric_dtype(salary_data):
+                            # حساب القيم المتطرفة باستخدام IQR
+                            q1 = salary_data.quantile(0.25)
+                            q3 = salary_data.quantile(0.75)
+                            iqr = q3 - q1
                             
-                            outliers = salary_data[(salary_data < lower_bound) | (salary_data > upper_bound)]
-                            
-                            if len(outliers) > 0:
-                                warnings.append(f"⚠️ تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب (استخدام IQR)")
-                except:
-                    pass
+                            if iqr > 0:  # تجنب iqr = 0
+                                lower_bound = q1 - 1.5 * iqr
+                                upper_bound = q3 + 1.5 * iqr
+                                
+                                # المقارنة مع bound (لاستخدام int)
+                                outliers = salary_data[(salary_data < lower_bound) | (salary_data > upper_bound)]
+                                
+                                if len(outliers) > 0:
+                                    warnings.append(f"⚠️ تم اكتشاف {len(outliers)} قيمة شاذة في الرواتب (استخدام IQR)")
+                        else:
+                            warnings.append("⚠️ عمود الراتب ليس بيانات رقمية (لا يمكن اكتشاف قيم شاذة)")
+                except Exception as e:
+                    warnings.append(f"⚠️ خطأ في اكتشاف القيم الشاذة: {str(e)[:50]}")
         
         # 4. فحص التواريخ غير المنطقية
         if 'hire_date' in self.mapping:
@@ -325,6 +345,10 @@ class FlexibleDataAnalyzer:
                 except:
                     pass
         
+        # 5. تحذير عام إذا كان هناك تحليل غير مكتمل
+        if len(self.df) < 10:
+            warnings.append("⚠️ عدد السجلات قليل جداً، النتائج قد لا تكون دقيقة")
+        
         return warnings
     
     def get_modified_dataframe(self):
@@ -332,50 +356,121 @@ class FlexibleDataAnalyzer:
         return self.df
     
     def generate_report(self):
-        """توليد تقرير نصي عن التحليل"""
-        report_lines = []
-        report_lines.append("=" * 60)
-        report_lines.append("تقرير تحليل بيانات الموارد البشرية")
-        report_lines.append(f"تاريخ التوليد: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        report_lines.append("=" * 60)
-        report_lines.append("")
-        
-        # معلومات عامة
-        report_lines.append("معلومات عامة:")
-        report_lines.append(f"- عدد الموظفين: {len(self.df)}")
-        report_lines.append(f"- عدد الأعمدة: {len(self.df.columns)}")
-        report_lines.append("")
-        
-        # KPIs
-        kpis = self._calculate_kpis()
-        report_lines.append("المؤشرات الرئيسية (KPIs):")
-        for kpi_name, kpi_info in kpis.items():
-            report_lines.append(f"- {kpi_info['label']}: {kpi_info['value']}")
-        report_lines.append("")
-        
-        # Insights
-        insights = self._extract_insights()
-        if insights:
-            report_lines.append("الرؤى المستخلصة:")
-            for insight in insights:
-                report_lines.append(f"- {insight}")
+        """توليد تقرير نصي عن التحليل - إصدار محسن"""
+        try:
+            report_lines = []
+            
+            # العنوان الرئيسي
+            report_lines.append("=" * 80)
+            report_lines.append("تقرير تحليل بيانات الموارد البشرية")
+            report_lines.append("=" * 80)
+            report_lines.append(f"تاريخ التوليد: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+            report_lines.append("-" * 80)
             report_lines.append("")
-        
-        # Warnings
-        warnings = self._check_data_quality()
-        if warnings:
-            report_lines.append("تحذيرات جودة البيانات:")
-            for warning in warnings:
-                report_lines.append(f"- {warning}")
+            
+            # معلومات عامة
+            report_lines.append("📋 معلومات عامة:")
+            report_lines.append(f"   • عدد الموظفين: {len(self.df)}")
+            report_lines.append(f"   • عدد الأعمدة: {len(self.df.columns)}")
+            
+            # الأعمدة الرئيسية المستخدمة
+            used_columns = [v for v in self.mapping.values() if v not in ["❌ لا يوجد", "❌ غير متوفر"]]
+            if used_columns:
+                report_lines.append(f"   • الأعمدة المستخدمة: {len(used_columns)} من {len(self.df.columns)}")
             report_lines.append("")
-        
-        # Recommendations
-        report_lines.append("التوصيات:")
-        if 'salary' in self.mapping:
-            report_lines.append("1. مراجعة هيكل الرواتب لضمان العدالة")
-        if 'performance_score' in self.mapping:
-            report_lines.append("2. ربط نظام المكافآت بالأداء")
-        if 'department' in self.mapping:
-            report_lines.append("3. تحليل توزيع المواهب بين الأقسام")
-        
-        return "\n".join(report_lines)
+            
+            # KPIs
+            kpis = self._calculate_kpis()
+            report_lines.append("📊 المؤشرات الرئيسية (KPIs):")
+            for kpi_name, kpi_info in kpis.items():
+                value = kpi_info['value']
+                label = kpi_info['label']
+                icon = kpi_info.get('icon', '')
+                report_lines.append(f"   {icon} {label}: {value}")
+            report_lines.append("")
+            
+            # Insights
+            insights = self._extract_insights()
+            if insights:
+                report_lines.append("💡 الرؤى المستخلصة:")
+                for insight in insights:
+                    report_lines.append(f"   • {insight}")
+                report_lines.append("")
+            
+            # Warnings
+            warnings = self._check_data_quality()
+            if warnings:
+                report_lines.append("⚠️ تحذيرات جودة البيانات:")
+                for warning in warnings:
+                    clean_warning = str(warning).replace('<', '').replace('>', '')
+                    report_lines.append(f"   • {clean_warning}")
+                report_lines.append("")
+            
+            # توزيع الأقسام
+            if 'department' in self.mapping:
+                dept_col = self.mapping['department']
+                if dept_col in self.df.columns:
+                    dept_counts = self.df[dept_col].value_counts()
+                    if len(dept_counts) > 0:
+                        report_lines.append("🏢 توزيع الموظفين حسب القسم:")
+                        for dept, count in dept_counts.head(5).items():
+                            percentage = (count / len(self.df)) * 100
+                            report_lines.append(f"   • {dept}: {count} موظف ({percentage:.1f}%)")
+                        report_lines.append("")
+            
+            # توزيع الرواتب
+            if 'salary' in self.mapping:
+                salary_col = self.mapping['salary']
+                if salary_col in self.df.columns:
+                    salary_data = pd.to_numeric(self.df[salary_col], errors='coerce').dropna()
+                    if len(salary_data) > 0:
+                        report_lines.append("💰 ملخص الرواتب:")
+                        report_lines.append(f"   • أعلى راتب: ${salary_data.max():,.0f}")
+                        report_lines.append(f"   • أقل راتب: ${salary_data.min():,.0f}")
+                        report_lines.append(f"   • متوسط الراتب: ${salary_data.mean():,.0f}")
+                        report_lines.append(f"   • الانحراف المعياري: ${salary_data.std():,.0f}")
+                        report_lines.append("")
+            
+            # Recommendations
+            report_lines.append("✅ التوصيات:")
+            report_lines.append("   1. مراجعة هيكل الرواتب لضمان العدالة")
+            report_lines.append("   2. ربط نظام المكافآت بالأداء")
+            report_lines.append("   3. تحليل توزيع المواهب بين الأقسام")
+            report_lines.append("   4. معالجة القيم المفقودة في البيانات")
+            report_lines.append("   5. تحديث سياسات التوظيف بناءً على التحليل")
+            report_lines.append("")
+            
+            # تذييل التقرير
+            report_lines.append("=" * 80)
+            report_lines.append("ملاحظات:")
+            report_lines.append("   • هذا التقرير تم إنشاؤه تلقائياً بواسطة لوحة تحكم HR الذكية")
+            report_lines.append("   • للاستفسارات: فريق تحليل البيانات - الموارد البشرية")
+            report_lines.append("=" * 80)
+            
+            # إنشاء النص النهائي
+            report_text = "\n".join(report_lines)
+            
+            # التحقق من الترميز الصحيح
+            try:
+                report_text = report_text.encode('utf-8').decode('utf-8')
+            except:
+                pass
+            
+            return report_text
+            
+        except Exception as e:
+            error_report = f"""
+============================================================
+خطأ في إنشاء التقرير
+============================================================
+حدث خطأ أثناء إنشاء التقرير: {str(e)}
+
+البيانات المتاحة:
+- عدد الصفوف: {len(self.df)}
+- عدد الأعمدة: {len(self.df.columns)}
+- الأعمدة المعينة: {self.mapping}
+
+يرجى التحقق من البيانات والمحاولة مرة أخرى.
+============================================================
+"""
+            return error_report
